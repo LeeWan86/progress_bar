@@ -87,7 +87,13 @@ export class App extends Component<Props> {
     for (let i = 0; i < bars.length; i++) {
 
       if (selectedProgressBar == i) {
-        arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+
+        if (parseInt(ev.target.value) + parseInt(bars[i]) < 0) {
+          arr.push(0);
+        } else {
+          arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+        }
+
       } else {
         arr.push(bars[i]);
       }
