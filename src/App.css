@@ -40,6 +40,10 @@
     min-width: 150px;
 }
 
+.space-right {
+  margin-right: 10px;
+}
+
 .App-link {
   color: #61dafb;
 }

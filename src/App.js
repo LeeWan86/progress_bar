@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import { Container, Row, Col, Button, Progress, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Container, Row, Col, Button, Progress, Dropdown, DropdownToggle, DropdownMenu, DropdownItem , Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import './App.css';
 import withConnectivity from "./hoc/withConnectivity";
 import produce from "immer";
@@ -12,10 +12,11 @@ export class App extends Component<Props> {
     super(props);
 
     this.state = {
-      selectedProgressBar: 0,
+      selectedProgressBar: -1,
       dropdownOpen: false,
       progressDropDownTitle: "Progress Bar",
-      bars: []
+      bars: [],
+      showErrorModal:false
     };
   }
 
@@ -47,12 +48,6 @@ export class App extends Component<Props> {
     if (success != null) {
 
       if (bars.length  == 0 ) {
-
-        var arr = [];
-
-        for (let i = 0 ; i < success.bars.length; i++) {
-          arr.push(Math.ceil(((success.bars[i]/success.limit)*100).toFixed(2)));
-        }
 
         this.setState(
           produce(this.state, draft => {
@@ -86,25 +81,65 @@ export class App extends Component<Props> {
 
     for (let i = 0; i < bars.length; i++) {
 
-      if (selectedProgressBar == i) {
+      if (selectedProgressBar > -1) {
+        if (selectedProgressBar == i) {
 
-        if (parseInt(ev.target.value) + parseInt(bars[i]) < 0) {
-          arr.push(0);
+          if (parseInt(ev.target.value) + parseInt(bars[i]) < 0) {
+            arr.push(0);
+          } else {
+            arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+          }
+
         } else {
-          arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+          arr.push(bars[i]);
         }
 
-      } else {
-        arr.push(bars[i]);
-      }
+        this.setState(
+          produce(this.state, draft => {
+            draft.bars = arr;
+          })
+        );
 
+      } else {
+
+        this.setState(
+          produce(this.state, draft => {
+            draft.showErrorModal = true;
+          })
+        );
+      }
     }
+
+  }
+
+  onClickCloseModal = () => {
+
     this.setState(
       produce(this.state, draft => {
-        draft.bars = arr;
+        draft.showErrorModal = false;
       })
     );
+  }
 
+  errorMessageModal = () => {
+
+    const {showErrorModal} = this.state;
+
+    return(
+      <Modal isOpen={showErrorModal} size="lg" toggle={this.onClickCloseModal}>
+        <ModalHeader toggle={this.onClickCloseModal}>
+          <label>Info</label>
+        </ModalHeader>
+        <ModalBody>
+            <label>Please select a progress bar.</label>
+        </ModalBody>
+        <ModalFooter>
+          <div>
+            <Button className={"btn-default space-right"} onClick={this.onClickCloseModal}>Close</Button>
+
+          </div>
+        </ModalFooter>
+      </Modal>);
 
   }
 
@@ -205,6 +240,7 @@ export class App extends Component<Props> {
           {this.generateButton()}
           </Row>
         </Container>
+        {this.errorMessageModal()}
       </div>
     );
   }
