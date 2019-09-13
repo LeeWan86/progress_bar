@@ -13,7 +13,9 @@ export class App extends Component<Props> {
 
     this.state = {
       selectedProgressBar: 0,
-      dropdownOpen: false
+      dropdownOpen: false,
+      progressDropDownTitle: "Progress Bar",
+      bars: []
     };
   }
 
@@ -37,22 +39,66 @@ export class App extends Component<Props> {
   generateProgressBar = () => {
 
     const {success} = this.props.endPointResult;
+    const {isFirstLoad,progressBarValue, bars} = this.state;
+
     var arr = [];
+    var val = []
 
     if (success != null) {
 
-      for (let i = 0; i < success.bars.length; i++) {
+      if (bars.length  == 0 ) {
 
-        arr.push(<Row key={i} className="progress-bar-box">
-          <Col sm="12" md={{size: 6, offset:3}} className="progress-bar-spacing">
-            <Progress value={success.bars[i]} color={this.getProgressBarColor(i)} />
-          </Col>
-        </Row>);
+        var arr = [];
+
+        for (let i = 0 ; i < success.bars.length; i++) {
+          arr.push(Math.ceil(((success.bars[i]/success.limit)*100).toFixed(2)));
+        }
+
+        this.setState(
+          produce(this.state, draft => {
+            draft.bars = success.bars;
+          })
+        );
 
       }
 
+
+      for (let i = 0; i < success.bars.length; i++) {
+        var value = this.state.bars[i];
+        arr.push(<Row key={i} className="progress-bar-box">
+          <Col sm="12" md={{size: 6, offset:3}} className="progress-bar-spacing">
+            <Progress value={value} color={this.state.bars[i] > 100 ? "danger" : this.getProgressBarColor(i)}>{value + "%"}</Progress>
+          </Col>
+        </Row>);
+      }
+
       return arr;
+
     }
+
+  }
+
+  buttonClick = (ev) => {
+
+    const {dropdownOpen,selectedProgressBar, bars} = this.state;
+    const {success} = this.props.endPointResult;
+    var arr = [];
+
+    for (let i = 0; i < bars.length; i++) {
+
+      if (selectedProgressBar == i) {
+        arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+      } else {
+        arr.push(bars[i]);
+      }
+
+    }
+    this.setState(
+      produce(this.state, draft => {
+        draft.bars = arr;
+      })
+    );
+
 
   }
 
@@ -62,33 +108,39 @@ export class App extends Component<Props> {
     var arr = [];
 
     if (success !== null) {
+
       var size = 12/success.buttons.length;
 
       return success.buttons.map((button, idx) => {
         return (
           <Col sm={12} md={size} className="button-spacing" key={`_generateButton_${idx}`}>
-            <Button className="progress-button">{button}</Button>
+            <Button color="primary" className="progress-button" onClick={this.buttonClick} value={button}>{button}</Button>
           </Col>
         )
       });
     }
+
     return <React.Fragment/>
 
   }
 
   _selectItem = (value) => () => {
 
-
-
     this.setState(
       produce(this.state, draft => {
-        draft.selectedProgressBar = value;
+        draft.dropdownOpen =  false;
+        draft.selectedProgressBar= value;
+        draft.progressDropDownTitle =  "Progress Bar " + value;
       })
     );
+
   }
 
-
   _toggle = () => {
+
+    if(this.state.dropdownOpen) {
+      return;
+    }
 
     this.setState(
       produce(this.state, draft => {
@@ -103,6 +155,7 @@ export class App extends Component<Props> {
     const {success} = (this.props.endPointResult);
 
     if (success !== null) {
+
       return success.bars.map((eachValue,idx) => {
 
         return (
@@ -120,10 +173,8 @@ export class App extends Component<Props> {
 
   render() {
 
-    const {dropdownOpen,selectedProgressBar} = this.state;
+    const {dropdownOpen,selectedProgressBar, bars} = this.state;
     const {success} = this.props.endPointResult;
-
-    console.log(selectedProgressBar,"selectedProgressBar");
 
     return (
       <div className="App">
@@ -135,9 +186,9 @@ export class App extends Component<Props> {
           </Row>
           {this.generateProgressBar()}
           <Row className="button-row">
-          <Dropdown isOpen={dropdownOpen} toggle={this._toggle} size="sm">
+          <Dropdown isOpen={dropdownOpen} toggle={this._toggle} size="sm" className="progress-bar-margin">
             <DropdownToggle caret>
-              Progress Bar
+              {this.state.progressDropDownTitle}
             </DropdownToggle>
             <DropdownMenu>
               {this._getMenuItem()}

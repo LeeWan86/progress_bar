@@ -47,7 +47,7 @@ const withConnectivity = (result) => (path) => (Component) => {
         throw Error("No valid data");
       }
       if(data.errors) {
-        const {code, description} = data.errors;
+        const {description} = data.errors;
         throw Error(`${description}`);
       }
     }
@@ -95,7 +95,6 @@ const withConnectivity = (result) => (path) => (Component) => {
     }
 
     render() {
-      const {isLoading, isError, error, success} = this.state;
       const {forwardedRef, ...otherProps} = this.props;
       const componentProps = otherProps;
       const responseWithConnection = {
