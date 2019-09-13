@@ -57,7 +57,6 @@ export class App extends Component<Props> {
 
       }
 
-
       for (let i = 0; i < success.bars.length; i++) {
         var value = this.state.bars[i];
         arr.push(<Row key={i} className="progress-bar-box">
@@ -78,36 +77,37 @@ export class App extends Component<Props> {
     const {dropdownOpen,selectedProgressBar, bars} = this.state;
     const {success} = this.props.endPointResult;
     var arr = [];
-
-    for (let i = 0; i < bars.length; i++) {
-
       if (selectedProgressBar > -1) {
-        if (selectedProgressBar == i) {
 
-          if (parseInt(ev.target.value) + parseInt(bars[i]) < 0) {
-            arr.push(0);
+        for (let i = 0; i < bars.length; i++) {
+
+          if (selectedProgressBar == i) {
+
+            if (parseInt(ev.target.value) + parseInt(bars[i]) < 0) {
+              arr.push(0);
+            } else {
+              arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+            }
+
           } else {
-            arr.push(parseInt(ev.target.value) + parseInt(bars[i]));
+            arr.push(bars[i]);
           }
 
-        } else {
-          arr.push(bars[i]);
-        }
-
-        this.setState(
-          produce(this.state, draft => {
-            draft.bars = arr;
-          })
-        );
-
-      } else {
-
-        this.setState(
-          produce(this.state, draft => {
-            draft.showErrorModal = true;
-          })
-        );
       }
+
+      this.setState(
+        produce(this.state, draft => {
+          draft.bars = arr;
+        })
+      );
+    }
+    else {
+
+      this.setState(
+        produce(this.state, draft => {
+          draft.showErrorModal = true;
+        })
+      );
     }
 
   }
